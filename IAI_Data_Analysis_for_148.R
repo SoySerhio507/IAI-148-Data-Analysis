@@ -13,6 +13,8 @@ analysis_tibble <- tibble(
   female_open_rate_in_control = vector(mode = "double", length = 11),
   other_population_in_control = vector(mode = "double", length = 11),
   other_open_rate_in_control = vector(mode = "double", length = 11),
+  undisclosed_population_in_control = vector(mode = "double", length = 11),
+  undisclosed_open_rate_in_control = vector(mode = "double", length = 11),
   treatment_group_population = vector(mode = "double", length = 11),
   treatment_group_open_rate = vector(mode = "double", length = 11),
   male_population_in_treatment = vector(mode = "double", length = 11),
@@ -21,6 +23,9 @@ analysis_tibble <- tibble(
   female_open_rate_in_treatment = vector(mode = "double", length = 11),
   other_population_in_treatment = vector(mode = "double", length = 11),
   other_open_rate_in_treatment = vector(mode = "double", length = 11),
+  undisclosed_population_in_treatment = vector(mode = "double", length = 11),
+  undisclosed_open_rate_in_treatment = vector(mode = "double", length = 11),
+  
 )
 # Preemptively, we will initialize a counter for the total opened, and the
 # opened for the control and treatment groups
@@ -100,15 +105,19 @@ for (week in 1:11) {
   current_week_treatment_male_population_counter <- 0
   current_week_treatment_female_population_counter <- 0
   current_week_treatment_other_population_counter <- 0
+  current_week_treatment_undisclosed_population_counter <- 0
   current_week_treatment_male_opened_counter <- 0
   current_week_treatment_female_opened_counter <- 0
   current_week_treatment_other_opened_counter <- 0
+  current_week_treatment_undisclosed_opened_counter <- 0
   current_week_control_male_population_counter <- 0
   current_week_control_female_population_counter <- 0
   current_week_control_other_population_counter <- 0
+  current_week_control_undisclosed_population_counter <- 0
   current_week_control_male_opened_counter <- 0
   current_week_control_female_opened_counter <- 0
   current_week_control_other_opened_counter <- 0
+  current_week_control_undisclosed_opened_counter <- 0
   
   # Then, we iterate through this week's binary assignment vector
   for (index in seq_along(current_week_assignment)) {
@@ -123,12 +132,12 @@ for (week in 1:11) {
       # And for the gendered information:
       # If the current observation didn't report a gender
       if (is.na(genders[index])) {
-        # We increment the other population counter
-        current_week_treatment_other_population_counter <-
-          current_week_treatment_other_population_counter + 1
-        # And add the opened observation to the other opened counter as well
-        current_week_treatment_other_opened_counter <-
-          current_week_treatment_other_opened_counter + 
+        # We increment the undisclosed population counter
+        current_week_treatment_undisclosed_population_counter <-
+          current_week_treatment_undisclosed_population_counter + 1
+        # And add the opened observation to the undisclosed opened counter too
+        current_week_treatment_undisclosed_opened_counter <-
+          current_week_treatment_undisclosed_opened_counter + 
           current_week_opened[index]
       }
       # Otherwise, if the corresponding observation is female
@@ -177,10 +186,10 @@ for (week in 1:11) {
       current_week_control_opened_counter <-
         current_week_control_opened_counter + current_week_opened[index]
       if (is.na(genders[index])) {
-        current_week_control_other_population_counter <-
-          current_week_control_other_population_counter + 1
-        current_week_control_other_opened_counter <-
-          current_week_control_other_opened_counter + 
+        current_week_control_undisclosed_population_counter <-
+          current_week_control_undisclosed_population_counter + 1
+        current_week_control_undisclosed_opened_counter <-
+          current_week_control_undisclosed_opened_counter + 
           current_week_opened[index]
       }
       else if (sum(str_detect(genders[index], c("female", "woman", "she")))) {
@@ -218,12 +227,16 @@ for (week in 1:11) {
     current_week_control_female_population_counter
   analysis_tibble[week, "other_population_in_control"] <-
     current_week_control_other_population_counter
+  analysis_tibble[week, "undisclosed_population_in_control"] <-
+    current_week_control_undisclosed_population_counter
   analysis_tibble[week, "male_population_in_treatment"] <-
     current_week_treatment_male_population_counter
   analysis_tibble[week, "female_population_in_treatment"] <-
     current_week_treatment_female_population_counter
   analysis_tibble[week, "other_population_in_treatment"] <-
     current_week_treatment_other_population_counter
+  analysis_tibble[week, "undisclosed_population_in_treatment"] <-
+    current_week_treatment_undisclosed_population_counter
   # And finally we divide the treatment/control opened by the treatment/control 
   # populations (respectively) and store the result in our tibble
   analysis_tibble[week, "treatment_group_open_rate"] <-
@@ -238,6 +251,9 @@ for (week in 1:11) {
   analysis_tibble[week, "other_open_rate_in_treatment"] <-
     current_week_treatment_other_opened_counter/
     analysis_tibble[week, "other_population_in_treatment"]
+  analysis_tibble[week, "undisclosed_open_rate_in_treatment"] <-
+    current_week_treatment_undisclosed_opened_counter/
+    analysis_tibble[week, "undisclosed_population_in_treatment"]
   analysis_tibble[week, "control_group_open_rate"] <-
     current_week_control_opened_counter/ 
     analysis_tibble[week, "control_group_population"]
@@ -250,6 +266,9 @@ for (week in 1:11) {
   analysis_tibble[week, "other_open_rate_in_control"] <-
     current_week_control_other_opened_counter/
     analysis_tibble[week, "other_population_in_control"]
+  analysis_tibble[week, "undisclosed_open_rate_in_control"] <-
+    current_week_control_undisclosed_opened_counter/
+    analysis_tibble[week, "undisclosed_population_in_control"]
 }
 
 # Now, to get the total population we simply sum the weekly population 
